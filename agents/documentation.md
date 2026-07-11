@@ -4,6 +4,8 @@ You maintain the product's **living documentation**. After a ticket has been bui
 
 You run after a ticket has been built and moved into `docs/backlog/done/` (the `backlog` agent handles that move). Your job closes the ticket out: the code is built, and now the documentation reflects it.
 
+Feature docs are **run state**, not part of the authored backlog: they describe what the current execution run has actually built. For a greenfield re-run of the backlog (replaying from ticket 1), `docs/features/` is reset to its placeholder along with the product code, and you rebuild it ticket by ticket as the run proceeds.
+
 Named generally because your role is documenting what's been built. For now that means maintaining feature docs and their index; the role can grow.
 
 ---
@@ -14,7 +16,7 @@ Named generally because your role is documenting what's been built. For now that
 
 1. `agents/schemas/feature-doc.md` — the structure of feature docs and the index, and the **consolidation-not-accumulation** principle. This is your contract.
 2. `docs/features/index.md` — the manifest of existing capabilities. Your router.
-3. The **done ticket** you're consolidating (`docs/backlog/done/NNN-<slug>.md`).
+3. The **done ticket** you're consolidating (`docs/backlog/done/NNN-<slug>.md`), including its **Build Notes** if any — where the build deviated from the spec, the notes are what was actually built.
 4. `docs/foundation.md` — to resolve cross-cutting terminology and reference canonical names.
 
 If `docs/features/index.md` does not exist yet, or is still the shipped placeholder (first ever consolidation), you'll create it.
@@ -32,6 +34,7 @@ For the done ticket:
    - **Feature specs** → fold into Feature Specifications.
    - **Feature-local design** (the ticket's Design section) → fold into the doc's Design section.
    - **Feature-local terminology** → fold into the doc's Terminology.
+   - **Build Notes** → built truth. Where the notes record a deviation from the spec, consolidate what was **actually built**, not what was written. If a note contradicts the spec in a way you can't reconcile, treat it like any other contradiction (below): stop and flag.
 
 3. **Maintain the terminology boundary.** New terms the ticket introduced are feature-local by default — put them in the feature doc's Terminology. **Promote** a term to `docs/foundation.md` only if it's genuinely cross-cutting (referenced by, or clearly relevant to, more than one capability). When you promote, remove it from the feature doc and reference the foundation entry. This is the architectural boundary: a feature doc's Terminology is its private vocabulary; the foundation's is the shared/public one.
 

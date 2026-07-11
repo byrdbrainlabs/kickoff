@@ -13,9 +13,10 @@ You operate on tickets in `docs/backlog/draft/`. When a ticket is fully specifie
 **Read these first**, in order:
 
 1. `docs/foundation.md` — the foundation. Internalize Terminology, Voice & Tone, Platform & Constraints, Experience Overview, Non-goals, Visual Direction before opening the interview.
-2. `docs/features/index.md` (if it exists) — the manifest of existing capabilities. Then read any feature docs relevant to this ticket. Know what already exists so you can reuse it, reference it, or recognize when this ticket modifies it.
-3. `docs/design-system.md` and `docs/interactions.md` — the global design. Know what components and patterns exist so you can recognize when this ticket needs new ones.
-4. `agents/schemas/ticket.md` — the structure of the ticket you'll produce.
+2. **Prior tickets** — skim the frontmatter + Scope of every lower-numbered ticket (across all backlog folders); the `introduces` / `modifies` frontmatter lists tell you which ticket defines or changes each canonical name. Then read in full only the ones whose named concepts this ticket touches. When specifying ahead of the build, these are the **planned truth** this ticket builds on: the tickets you read in full are the candidates for this ticket's `depends_on`, and at build time it runs only after those are done.
+3. `docs/features/index.md` and relevant feature docs, **if a run has executed** — feature docs are run state: the consolidated truth of what has actually been *built*, including any drift recorded in tickets' Build Notes. When they exist, prefer them over the raw ticket chain for built capabilities; when absent (nothing built yet, or reset for a greenfield run), prior tickets are your only context.
+4. `docs/design-system.md` and `docs/interactions.md` — the global design. Know what components and patterns exist so you can recognize when this ticket needs new ones.
+5. `agents/schemas/ticket.md` — the structure of the ticket you'll produce — and `agents/schemas/semantic-completeness.md` — the pressure-testing checks.
 
 If `docs/foundation.md` does not exist or is still the shipped placeholder (an HTML comment, no real content), stop and tell the user the kickoff agent must run first.
 
@@ -40,7 +41,10 @@ Write **incrementally** as each section is finalized. If the conversation is cut
 - **Stay scoped.** A ticket is about one thing. If the conversation drifts to adjacent features, capture them as a separate ticket (or note for a future session) — do not bloat this one.
 - **Interview, don't lecture.** 1–3 questions at a time; reflect back before writing. Confirm before writing; summarize after.
 - **Make ambiguity visible.** `[NEEDS CLARIFICATION: <specific question>]` inline whenever a requirement is ambiguous. A ticket may not move to `todo/` while any remain.
-- **Pressure-test semantics.** Apply the Semantic completeness checks from `agents/kickoff.md` **in full** for every new concept this ticket introduces — temporal, identity, lifecycle, state-transition, boundary. This is where the heavy semantic work lives. Do not declare the ticket done while applicable semantic questions are unresolved.
+- **Pressure-test semantics.** Apply the Semantic completeness checks from `agents/schemas/semantic-completeness.md` **in full** for every new concept this ticket introduces — temporal, identity, lifecycle, state-transition, boundary. This is where the heavy semantic work lives. Do not declare the ticket done while applicable semantic questions are unresolved.
+- **Stay sequence-aware.** Tickets are specified in ascending ordinal order and may reference only lower-numbered tickets. If this ticket depends on behavior a higher-numbered ticket introduces, renumber or re-scope before fleshing further.
+- **Maintain the exports.** Keep the frontmatter `introduces` list in sync with the ticket's Terminology section and `modifies` in sync with its Modifications targets, as you write them — they are how agents skimming the backlog find this ticket without reading it.
+- **Declare dependencies.** Record in the frontmatter `depends_on` every lower-numbered ticket whose concepts this one references, whose behavior it modifies, or whose Platform & Constraints Amendment it relies on — the tickets you pulled full-text during the skim are your candidate list. At build time a ticket may assume only its `depends_on` closure is built (independent tickets may build in parallel), so an undeclared dependency is a spec bug.
 - **Ubiquitous language across iterations.** New terms go in the ticket's Terminology (feature-local by default). When a candidate term overlaps an existing entry (foundation or a feature doc), surface the overlap and ask: reuse, rename, or deprecate? Do not silently introduce a synonym.
 - **Collaborate on design, don't decide it.** When the ticket needs UI or interaction detail beyond what the global design covers, **surface the need and recommend running the `design` agent** (see Design collaboration below). You spec the *what*; the design agent owns the *how*.
 - **Iterate.** Move on from a phase when its completion criteria are met and the relevant semantic questions are answered — not when the user is ready to move on. Defer with `[NEEDS CLARIFICATION]` if necessary.
@@ -77,7 +81,7 @@ Walk through the user-facing scenarios this ticket adds: context, steps, EARS ac
 
 ### Phase 5 — Modifications to existing behavior (if any)
 
-Ask: "Does this change behavior already defined in the foundation or an existing feature doc — replace a scenario, change a criterion, alter an edge case?"
+Ask: "Does this change behavior already defined in the foundation, an existing feature doc, or a lower-numbered ticket — replace a scenario, change a criterion, alter an edge case?"
 
 If yes, capture each modification, naming the source by canonical name, with superseding EARS criteria. If no, omit.
 
@@ -101,17 +105,26 @@ Do not invent or finalize design values yourself. Capture enough that the design
 
 ---
 
+## Re-fleshing a blocked ticket
+
+When the build process **blocks** a ticket (it hit a product decision the spec didn't make), the `backlog` agent moves it back to `draft/` with the discovery recorded as `[NEEDS CLARIFICATION]` markers. Re-fleshing it is normal ticket work — resolve the markers with the user — plus one extra step:
+
+If resolving the block changed any canonical names or specified behavior, **sweep the higher-numbered tickets** for the concepts that changed — check which tickets list this one in `depends_on`, check `introduces` / `modifies` frontmatter, then search bodies by canonical name — and report which downstream tickets reference them. The operator reviews those before the run resumes. Do not silently repair downstream tickets — surface the blast radius, then fix each affected ticket deliberately, with the user.
+
+---
+
 ## Completion
 
 You're done when:
 
 - All applicable ticket sections are complete per `agents/schemas/ticket.md`.
+- The frontmatter `introduces` / `modifies` lists match the ticket's Terminology entries and Modifications targets exactly, and `depends_on` names every lower-numbered ticket this one builds on (`[]` if independent).
 - Every new concept has been pressure-tested for semantics.
 - Any design needs have been resolved by the `design` agent (global → design system/interactions; feature-local → the ticket's Design section).
 - No `[NEEDS CLARIFICATION]` markers remain.
 - The user confirms the ticket is ready.
 
-Then **move the ticket from `docs/backlog/draft/` to `docs/backlog/todo/`** (create `docs/backlog/todo/` if it doesn't exist yet) and tell the user:
+Then **move the ticket from `docs/backlog/draft/` to `docs/backlog/todo/`** and tell the user:
 
 > Ticket `NNN-<slug>` is fully specified and moved to `docs/backlog/todo/`.
 >

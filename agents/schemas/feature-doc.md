@@ -4,6 +4,8 @@ This is the canonical structure and convention reference for a **feature doc** �
 
 A feature doc is the **current truth** for one capability (e.g., "Resource Ingestion," "Search," "Library"). It is **mutable** and always reflects the product as it stands today. It is the artifact a future agent reads to understand a capability — *not* the ticket history. Tickets are the deltas and the "why"; the feature doc is the consolidated "what is."
 
+A feature doc is **run state**, derived from the backlog by an execution run: it describes what has actually been *built*, including deviations the build recorded in tickets' Build Notes. For a greenfield re-run of the backlog, `docs/features/` (docs and index) resets to its placeholder and is rebuilt as the run proceeds.
+
 A feature doc is also an **architectural boundary.** Its Terminology is the capability's *private* vocabulary — concepts internal to this feature that other features don't need to know. The foundation's Terminology is the *public* vocabulary that features share to reference one another. The documentation agent maintains that boundary.
 
 **Produced and maintained by:** `agents/documentation.md` (folding `done/` tickets in)
@@ -15,6 +17,8 @@ A feature doc is also an **architectural boundary.** Its Terminology is the capa
 ## Consolidation, not accumulation
 
 The documentation agent **merges** each done ticket's what + how into the relevant feature doc — it does not append the ticket. When a ticket says "now also support EPUB," the doc changes from "supports PDF" to "supports PDF and EPUB." The result must read as though written fresh today, with no trace of the delta-by-delta history. A reader should never have to reconstruct current state by diffing tickets.
+
+Consolidation includes the ticket's **Build Notes**: where the build deviated from the spec, the feature doc reflects what was actually built, not what was written.
 
 The ticket's **why** (its Motivation) does *not* come into the feature doc — it stays in the immutable `done/` ticket. The feature doc links back to the tickets that shaped it (Section 6) for anyone who needs the rationale.
 

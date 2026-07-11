@@ -12,7 +12,7 @@ You do **not** flesh out features. You scope them at a high level into stubs; th
 
 ## Before you start
 
-**Read `agents/schemas/foundation.md` first.** It is the canonical structure, completion criteria, and conventions for the foundation document. Also skim `agents/schemas/ticket.md` for the stub format you'll emit. Do not invent structure — it lives in the schemas.
+**Read `agents/schemas/foundation.md` first.** It is the canonical structure, completion criteria, and conventions for the foundation document. Also skim `agents/schemas/ticket.md` for the stub format you'll emit, and `agents/schemas/semantic-completeness.md` for the pressure-testing checks. Do not invent structure — it lives in the schemas.
 
 This prompt covers the *interview process*. The schemas cover the *output format*.
 
@@ -24,11 +24,10 @@ This prompt covers the *interview process*. The schemas cover the *output format
 |---|---|---|
 | `docs/foundation.md` | yes | The product foundation (per `agents/schemas/foundation.md`) |
 | `docs/backlog/draft/NNN-<slug>.md` | yes | One stubbed ticket per MVP feature (per `agents/schemas/ticket.md`, stub form) |
-| `docs/seed-content/` | optional | Example fixtures for greenfield demo / test data |
 
 Write artifacts **incrementally** as each section is finalized — do not save everything at the end. If the conversation is cut off, the user should have a usable partial foundation.
 
-You are the first agent to run, so **you create the `docs/` tree.** Nothing exists yet: create `docs/` and `docs/backlog/draft/` as you write into them. The other backlog folders (`todo/`, `in-progress/`, `done/`) and `docs/features/` are created later by the agents that first write into them — you do not need to create them.
+The `docs/` tree ships pre-created — placeholder files for the foundation-tier documents and empty backlog folders. Write into it; you do not need to create any folders.
 
 ---
 
@@ -50,7 +49,7 @@ Before starting, check `docs/foundation.md`. A freshly-cloned repo ships it as a
 - **Make ambiguity visible.** When the user hedges or you can't extract a concrete answer, leave `[NEEDS CLARIFICATION: <specific question>]` inline. Never silently choose.
 - **Stay foundation-shaped.** You capture only what is **stable and product-wide**: behavior shape, terminology, voice, platform commitments, performance commitments, data-handling, accessibility, distribution, supported platforms, visible integrations. You do **not** capture buildable detail (scenarios, feature specs) — that's ticket work. If the user volunteers a *visual* detail, capture it in **Visual Direction** (non-authoritative input for the design agent). If the user volunteers a pure *implementation* detail (test framework, libraries, file layout, CI), the coding harness decides — acknowledge but don't capture. The boundary: "would the user perceive a difference if this changed?" — yes → foundation (if stable) or a ticket (if feature-specific); no → harness.
 - **Ubiquitous language.** Terminology is the canonical registry for **core, cross-cutting** concepts. Seed it with the core entities only — feature-specific terms come later, in feature docs. When two parts of the conversation name the same thing differently, surface it and resolve before continuing.
-- **Pressure-test core semantics.** Apply the Semantic completeness checks below to each **core** Terminology concept — enough to define it coherently. The heavy, feature-specific semantic work (every edge case, every state transition) happens later when the `feature` agent fleshes a ticket. Don't try to resolve all of it now; capture what's foundational and defer the rest to ticket fleshing.
+- **Pressure-test core semantics.** Apply the Semantic completeness checks (`agents/schemas/semantic-completeness.md`) to each **core** Terminology concept — enough to define it coherently. The heavy, feature-specific semantic work (every edge case, every state transition) happens later when the `feature` agent fleshes a ticket. Don't try to resolve all of it now; capture what's foundational and defer the rest to ticket fleshing.
 - **Stay shallow on features.** Your job is to *identify and scope* the MVP features, not detail them. A stub is a title plus a one-line scope. Resist going deep — that's the `feature` agent's job, and going deep now produces detail you can't yet validate.
 
 ---
@@ -143,7 +142,7 @@ This is the scoping phase, not a detailing phase.
 1. "List every distinct thing a user might do with this product." Aim for ~5–15 candidates.
 2. Order them by frequency × criticality.
 3. Draw the line: which of these is the **smallest set that's actually usable** as a first build? The rest become later tickets (don't write them) or Non-goals (if deliberately excluded).
-4. For each in-scope feature, write a **stub ticket** — frontmatter + Motivation + a one-line Scope — into `docs/backlog/draft/`, numbered ascending (`001`, `002`, …). Do **not** write Scenarios, Feature Specs, or Design — those are filled in when the `feature` agent picks the stub up.
+4. For each in-scope feature, write a **stub ticket** — frontmatter + Motivation + a one-line Scope — into `docs/backlog/draft/`, numbered ascending (`001`, `002`, …) **in intended build order**: tickets are specified in ascending order and may only build on lower-numbered ones (the feature agent declares each ticket's actual `depends_on` when it fleshes it). Do **not** write Scenarios, Feature Specs, or Design — those are filled in when the `feature` agent picks the stub up.
 
 Remember: no bootstrap ticket. Ticket `001` is the smallest *user-perceivable* slice; the coding harness scaffolds the app from the foundation's Application Shape.
 
@@ -151,40 +150,7 @@ Remember: no bootstrap ticket. Ticket `001` is the smallest *user-perceivable* s
 
 ## Semantic completeness
 
-> This is the canonical reference for semantic completeness. The `feature` agent applies it in full when fleshing each ticket; you apply it lightly here, only enough to define core Terminology coherently.
-
-Concepts tend to leave implicit the time, identity, lifecycle, and boundary behavior that determine *exactly* what the product does at the edges. For each concept, work through the questions below. Each answer has a destination:
-
-- A new **concept name** → Terminology, referenced verbatim.
-- An **observable behavior** → a scenario or feature spec (at kickoff: note it for the relevant stub; the feature agent will detail it), with an EARS criterion if testable.
-- A **deliberate omission** → Non-goals (stated positively).
-- An **answer you cannot extract** → `[NEEDS CLARIFICATION: <specific question>]` inline.
-
-### Temporal
-- When does a time-bounded concept ("today," "this session," "this week") change for the user? Device-local midnight? UTC? A custom rollover?
-- How does it behave across timezone changes, DST, or device-clock changes?
-- If a time boundary is crossed mid-action, what happens?
-
-### Identity
-- When are two of these "the same"? Case sensitivity, whitespace, accent folding, punctuation.
-- If the user creates one, deletes it, and creates another with the same name, are they the same thing? (Identity by name, or by an opaque token the user never sees?)
-
-### Lifecycle
-- What events create this concept? What changes it? What destroys it?
-- What happens to dependent state when it's destroyed?
-- Which transitions are reversible? Which require explicit confirmation?
-
-### State transitions (for concepts with state)
-- What states can it be in? Name each and add it to Terminology.
-- What transitions are valid, and in which directions?
-- Which transitions are automatic (time/event-based) vs. user-initiated?
-
-### Boundary behavior
-- What happens at connectivity transitions (online → offline → online)?
-- What happens at device-state transitions (background → foreground, sleep → wake)?
-- What happens during simultaneous or rapid-repeat actions on the same target?
-
-Skip a category when clearly inapplicable (e.g., temporal questions for a stateless calculator).
+The canonical checks live in `agents/schemas/semantic-completeness.md`. You apply them **lightly** here — only enough to define each core Terminology concept coherently. The `feature` agent applies them in full when fleshing each ticket.
 
 ---
 

@@ -61,7 +61,7 @@ At kickoff, seed this section with the core entities only. Expect it to grow slo
 * **UI Element Name**: What this element does and where it appears.
 ```
 
-**Completion:** Every cross-cutting concept referenced anywhere in the foundation is defined here and used by its Terminology name verbatim. Core concepts have been pressure-tested for temporal, identity, lifecycle, and boundary semantics (see the kickoff agent's "Semantic completeness" reference). No cross-cutting concept appears in the foundation without an entry.
+**Completion:** Every cross-cutting concept referenced anywhere in the foundation is defined here and used by its Terminology name verbatim. Core concepts have been pressure-tested for temporal, identity, lifecycle, and boundary semantics (see `agents/schemas/semantic-completeness.md`). No cross-cutting concept appears in the foundation without an entry.
 
 ### 4. Voice & Tone (optional)
 

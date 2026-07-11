@@ -4,11 +4,11 @@ This is the canonical structure and convention reference for a **ticket** — on
 
 A ticket is the **unit of work and the unit of history**. It is created as a stub (by the kickoff agent for the MVP, or by the operator/feature agent later), fleshed out in `backlog/draft/`, built from `backlog/todo/`, and — once in `backlog/done/` — left **immutable** as the historical record of *why* a change was made. Its **what + how** is consolidated into a **feature doc** by the documentation agent; its **why** stays here.
 
-A ticket is **focused** and **self-contained for its delta**. It does not restate the foundation (terminology, platform, voice, experience) — it inherits all of that. It states only what is specific to this change. It may reference foundation concepts and existing feature docs by their canonical names.
+A ticket is **focused** and **self-contained for its delta**. It does not restate the foundation (terminology, platform, voice, experience) — it inherits all of that. It states only what is specific to this change. It may reference foundation concepts, existing feature docs, and lower-numbered tickets by their canonical names.
 
-**Produced by:** `agents/kickoff.md` (stubs), `agents/feature.md` (fleshed); `agents/design.md` writes the feature-local Design section
+**Produced by:** `agents/kickoff.md` (stubs), `agents/feature.md` (fleshed); `agents/design.md` writes the feature-local Design section; the build process appends Build Notes at close-out
 **Consumed by:** the build process (your coding harness), `agents/documentation.md`
-**File location:** `docs/backlog/{draft,todo,in-progress,done}/<slug>.md` — the folder is the ticket's status
+**File location:** `docs/backlog/{draft,todo,in-progress,done}/NNN-<slug>.md` — the folder is the ticket's status
 
 ---
 
@@ -31,21 +31,30 @@ Every ticket begins with frontmatter:
 ---
 slug: ticket-slug
 title: Short Title
-feature: feature-slug   # optional — the capability this targets, if known
+feature: feature-slug            # optional — the capability this targets, if known
+introduces: [Term A, Term B]     # canonical terms this ticket defines (fleshed tickets; omit if none)
+modifies: [Term C]               # canonical names whose behavior this ticket changes (omit if none)
+depends_on: [001-app-shell]      # lower-numbered tickets this one requires built ([] if independent)
 ---
 ```
 
 - `slug` matches the slug portion of the filename.
 - `title` is a short human-readable title (≤ 60 characters).
 - `feature` (optional) names the feature doc this ticket most likely updates. A hint for the documentation agent — which makes the final new-vs-update call via the feature index.
+- `introduces` / `modifies` are the ticket's **exports**, maintained by the feature agent during fleshing (stubs don't have them yet). They exist so agents skimming the backlog can answer "which ticket defines the concept I'm referencing?" and "which tickets change this behavior?" from frontmatter alone, without reading ticket bodies. **Sync rule:** every entry in the ticket's Terminology section appears in `introduces`, and every `Modifies:` target in Section 6 appears in `modifies` — no more, no less. Omit either field when empty.
+- `depends_on` lists the lower-numbered tickets (by file stem, `NNN-slug`) that must be **built** before this one can run — direct dependencies only; schedulers compute the closure. The feature agent derives it during fleshing: any lower-numbered ticket whose concepts this ticket references, whose behavior it modifies, or whose Platform & Constraints Amendment it relies on is a dependency. A fleshed ticket always carries the field; `[]` means independent — buildable any time. Stubs don't have it yet.
 
-Filenames carry a leading ordinal prefix (`007-add-epub-support.md`), assigned at creation, unique and ascending (gaps are fine). The prefix is the **default pickup order** for the `todo/` queue — it answers "what's next" and lets the filesystem sort the backlog ascending. It is a soft scheduling hint: the `backlog` agent reports the lowest-numbered `todo/` ticket as next, and the build process may reorder for dependencies it detects from the feature docs.
+A `todo/` ticket is **ready** when every ticket in its `depends_on` is in `done/`. Tickets with disjoint dependency closures may build **in parallel** — `depends_on` captures semantic dependence; code-level conflicts between parallel builds are the build harness's concern.
 
-The ordinal orders the *work queue*, not the *meaning*. It is **not** load-bearing for truth — you never replay tickets in sequence to learn current state; the feature docs and index are the source of truth. So the strict contiguity the old system enforced is gone: numbers must be unique and sortable, nothing more.
+Frontmatter + Scope together are the ticket's **skim layer**: agents fleshing higher-numbered tickets read these for every lower-numbered ticket and pull full bodies only where the named concepts overlap.
+
+Filenames carry a leading ordinal prefix (`007-add-epub-support.md`), assigned at creation, unique and ascending (gaps are fine). The prefix is the **specification order contract**: tickets are fleshed in ascending order and may reference only lower-numbered tickets — which keeps the `depends_on` graph acyclic by construction. At build time, `depends_on` governs: a ticket runs once its dependencies are `done/` and may assume only its dependency closure is built. Among ready tickets, the ordinal is the pickup priority — the `backlog` agent reports the lowest-numbered ready ticket first.
+
+The ordinal orders the *work queue*, not the *meaning* — you never replay tickets in sequence to learn current built state; the feature docs (run state) consolidate that. Strict contiguity is not required: numbers must be unique and ascending, nothing more.
 
 ## Sections
 
-A complete (fleshed) ticket contains the following sections, in order. Sections marked optional are included only when non-empty. A **stub** (kickoff output) has only Motivation and Scope, with the rest to be filled in during fleshing.
+A complete (fleshed) ticket contains the following sections, in order. Sections marked optional are included only when non-empty. A **stub** (kickoff output) has only Motivation and Scope, with the rest to be filled in during fleshing. Build Notes is not part of fleshing — the build process appends it at close-out.
 
 1. Motivation
 2. Scope
@@ -55,6 +64,7 @@ A complete (fleshed) ticket contains the following sections, in order. Sections 
 6. Modifications to Existing Behavior (optional)
 7. Feature Specifications (optional)
 8. Design (optional)
+9. Build Notes (build process only)
 
 ### 1. Motivation
 
@@ -66,7 +76,9 @@ A short (1–3 paragraphs) statement of *why* this change exists. Problem or opp
 
 A one-paragraph summary of what this ticket adds or changes. State new behaviors and surfaces; explicitly note anything notable that's intentionally out of scope for this ticket.
 
-**Completion:** A reader can predict which scenarios and features will appear below from reading the scope alone.
+Scope doubles as this ticket's **index entry**: agents fleshing higher-numbered tickets skim frontmatter + Scope to decide whether to read the full ticket. Write it to support that decision.
+
+**Completion:** A reader can predict which scenarios and features will appear below from reading the scope alone, and can decide from Scope alone whether this ticket is relevant to another.
 
 ### 3. Terminology (optional)
 
@@ -76,6 +88,8 @@ By default, terms introduced here are **feature-local** — they will land in th
 
 If this ticket renames or deprecates an existing concept (from the foundation or a feature doc), state the rename explicitly with old and new names — do not silently shadow existing vocabulary.
 
+Keep the frontmatter `introduces` list in sync: every term defined here appears there, by exact name.
+
 Include this section only if new concepts are introduced. Otherwise omit.
 
 ### 4. Platform & Constraints Amendments (optional)
@@ -83,6 +97,8 @@ Include this section only if new concepts are introduced. Otherwise omit.
 Explicit changes to commitments in the foundation's Platform & Constraints. Each amendment names the item it changes and states the new commitment.
 
 Usually empty. Include only if a commitment genuinely changes (e.g., a sync feature changes "all data stays on the device" to "data syncs to a server when accounts are enabled").
+
+During the build of this ticket, an amendment **supersedes** the foundation's version of the commitment it changes — the build follows the amendment, not the (not-yet-updated) foundation. The documentation agent applies the amendment to the foundation at consolidation, after the ticket is done.
 
 If an amendment alters a commitment that shipped code or other features depend on, flag it explicitly to the user before writing.
 
@@ -111,24 +127,26 @@ Each scenario is self-contained and may reference UI elements and concepts from 
 - DO NOT pre-decompose into engineering tasks, file structures, or build phases.
 - DO NOT include implementation details. Describe only what the user perceives.
 
-**Completion:** Every scenario has Context, Steps, and at least 2 EARS criteria. Apply the kickoff agent's Semantic completeness checks during gathering — a scenario is not finished while temporal, identity, lifecycle, or boundary semantics for the concepts it touches remain implicit.
+**Completion:** Every scenario has Context, Steps, and at least 2 EARS criteria. Apply the Semantic completeness checks (`agents/schemas/semantic-completeness.md`) during gathering — a scenario is not finished while temporal, identity, lifecycle, or boundary semantics for the concepts it touches remain implicit.
 
 ### 6. Modifications to Existing Behavior (optional)
 
-Explicit changes to behavior defined in the foundation or an existing feature doc. Each modification names the source by canonical name and states the change concretely.
+Explicit changes to behavior defined in the foundation, an existing feature doc, or — when specifying ahead of the build — a lower-numbered ticket's planned behavior. Each modification names the source by canonical name and states the change concretely.
 
 Format:
 
 ```
 ### Modifies: <Scenario or Feature canonical name>
 
-**Source.** [Feature doc: resource-ingestion] or [Foundation, Experience Overview]
+**Source.** [Feature doc: resource-ingestion], [Foundation, Experience Overview], or [Ticket: 015-full-text-search]
 **Change.** A one-paragraph description of what behavior is now different.
 **Updated acceptance criteria.**
 - WHEN … THE SYSTEM SHALL …
 ```
 
-Modifications should be deliberate. Include this section only if modifications exist. Otherwise omit.
+Modifications should be deliberate. Keep the frontmatter `modifies` list in sync: every `Modifies:` target here appears there, by exact canonical name.
+
+Include this section only if modifications exist. Otherwise omit.
 
 ### 7. Feature Specifications (optional)
 
@@ -158,6 +176,16 @@ Include this section only if the ticket has feature-local design. Otherwise omit
 - **Appearance / states:** … (references design-system tokens by name)
 - **Interaction:** … (references interactions tokens by name)
 ```
+
+### 9. Build Notes (build process only)
+
+Appended by the **build process** as part of closing the ticket out, before the `backlog` agent moves it to `done/`. A short record of what actually happened wherever the build deviated from or refined the spec: discoveries made, ambiguities resolved in an obvious direction, behavior implemented differently than written (and why).
+
+**Observations only — no product decisions.** If the build would have to make a product-visible choice the spec didn't make, it does not write a note; it **blocks** (records the question as `[NEEDS CLARIFICATION]` markers and hands the ticket to the `backlog` agent to move back to `draft/`).
+
+This is the one section of a ticket the build process writes; the spec agents never touch it. The `documentation` agent consolidates built truth from the spec **plus** these notes — a deviation recorded here is part of what was actually built. Once the ticket is in `done/`, the notes are immutable with the rest of the ticket.
+
+Omit if the build matched the spec exactly.
 
 ---
 
@@ -192,7 +220,7 @@ The same five patterns as the foundation and feature docs:
 
 ### Cross-references
 
-Reference UI elements, scenarios, and features by their exact canonical name from the foundation or existing feature docs. Do not invent IDs or anchor links.
+Reference UI elements, scenarios, and features by their exact canonical name from the foundation, existing feature docs, or a lower-numbered ticket. Do not invent IDs or anchor links.
 
 ---
 
@@ -202,7 +230,10 @@ Reference UI elements, scenarios, and features by their exact canonical name fro
 ---
 slug: <ticket-slug>
 title: <Short Title>
-feature: <feature-slug>   # optional
+feature: <feature-slug>          # optional
+introduces: [<Term>, …]          # omit if none
+modifies: [<canonical name>, …]  # omit if none
+depends_on: [<NNN-slug>, …]      # [] if independent
 ---
 
 # Ticket: <Short Title>
@@ -257,4 +288,8 @@ feature: <feature-slug>   # optional
 ### <Component or pattern name>
 - **Appearance / states:** …
 - **Interaction:** …
+
+## Build Notes <!-- build process only; appended at close-out; omit if build matched spec -->
+
+- <deviation or discovery, and why>
 ````

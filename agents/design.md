@@ -27,7 +27,7 @@ This serves a PM with taste but no design vocabulary (a usable system without in
 **Read these first:**
 
 1. `docs/foundation.md` — especially **Visual Direction** (§8), **Voice & Tone** (§4), **Experience Overview** (§6, the persistent UI areas), and Terminology. Visual Direction is *input*, not a decision you must adopt.
-2. `docs/features/index.md` and relevant feature docs (per-ticket mode) — know what components and patterns already exist.
+2. `docs/features/index.md` and relevant feature docs (per-ticket mode) — know what components and patterns already exist. Feature docs are run state and may not exist yet when specifying ahead of the build; in that case the planned feature-local design lives in lower-numbered tickets' Design sections — skim their frontmatter + Scope to find the relevant ones.
 3. `docs/design-system.md` and `docs/interactions.md` if they exist — what's already established.
 4. `agents/schemas/design-system.md` — structure **and** `Sensible Defaults` for the design system.
 5. `agents/schemas/interactions.md` — structure **and** `Sensible Defaults` for interactions.
