@@ -41,7 +41,7 @@ depends_on: [001-app-shell]      # lower-numbered tickets this one requires buil
 - `slug` matches the slug portion of the filename.
 - `title` is a short human-readable title (≤ 60 characters).
 - `feature` (optional) names the feature doc this ticket most likely updates. A hint for the documentation agent — which makes the final new-vs-update call via the feature index.
-- `introduces` / `modifies` are the ticket's **exports**, maintained by the feature agent during fleshing (stubs don't have them yet). They exist so agents skimming the backlog can answer "which ticket defines the concept I'm referencing?" and "which tickets change this behavior?" from frontmatter alone, without reading ticket bodies. **Sync rule:** every entry in the ticket's Terminology section appears in `introduces`, and every `Modifies:` target in Section 6 appears in `modifies` — no more, no less. Omit either field when empty.
+- `introduces` / `modifies` are the ticket's **exports**, maintained by the feature agent during fleshing (stubs don't have them yet). They exist so agents skimming the backlog can answer "which ticket defines the concept I'm referencing?" and "which tickets change this behavior?" from frontmatter alone, without reading ticket bodies. **Sync rule:** every entry in the ticket's Terminology section appears in `introduces`, and every `Modifies:` target in Section 6 appears in `modifies` — no more, no less. One carve-out: a Terminology entry that **annotates an existing foundation or feature-doc term** (adding feature context to a concept defined elsewhere, and saying so) is excluded from `introduces` — that list answers "which ticket *defines* this concept?", and for an annotated term the answer is the original definition's home. Omit either field when empty.
 - `depends_on` lists the lower-numbered tickets (by file stem, `NNN-slug`) that must be **built** before this one can run — direct dependencies only; schedulers compute the closure. The feature agent derives it during fleshing: any lower-numbered ticket whose concepts this ticket references, whose behavior it modifies, or whose Platform & Constraints Amendment it relies on is a dependency. A fleshed ticket always carries the field; `[]` means independent — buildable any time. Stubs don't have it yet.
 
 A `todo/` ticket is **ready** when every ticket in its `depends_on` is in `done/`. Tickets with disjoint dependency closures may build **in parallel** — `depends_on` captures semantic dependence; code-level conflicts between parallel builds are the build harness's concern.
@@ -88,7 +88,7 @@ By default, terms introduced here are **feature-local** — they will land in th
 
 If this ticket renames or deprecates an existing concept (from the foundation or a feature doc), state the rename explicitly with old and new names — do not silently shadow existing vocabulary.
 
-Keep the frontmatter `introduces` list in sync: every term defined here appears there, by exact name.
+Keep the frontmatter `introduces` list in sync: every term **defined** here appears there, by exact name. An entry that merely annotates an existing foundation or feature-doc term (mark it as such, e.g. "(Foundation term; this ticket realizes it for …)") stays out of `introduces` — the concept's definition lives elsewhere.
 
 Include this section only if new concepts are introduced. Otherwise omit.
 
