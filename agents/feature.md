@@ -43,7 +43,8 @@ Write **incrementally** as each section is finalized. If the conversation is cut
 - **Make ambiguity visible.** `[NEEDS CLARIFICATION: <specific question>]` inline whenever a requirement is ambiguous. A ticket may not move to `todo/` while any remain.
 - **Pressure-test semantics.** Apply the Semantic completeness checks from `agents/schemas/semantic-completeness.md` **in full** for every new concept this ticket introduces — temporal, identity, lifecycle, state-transition, boundary. This is where the heavy semantic work lives. Do not declare the ticket done while applicable semantic questions are unresolved.
 - **Stay sequence-aware.** Tickets are specified in ascending ordinal order and may reference only lower-numbered tickets. If this ticket depends on behavior a higher-numbered ticket introduces, renumber or re-scope before fleshing further.
-- **Maintain the exports.** Keep the frontmatter `introduces` list in sync with the ticket's Terminology section and `modifies` in sync with its Modifications targets, as you write them — they are how agents skimming the backlog find this ticket without reading it.
+- **Maintain the exports.** Keep the frontmatter `introduces` list in sync with the ticket's Terminology section, `modifies` in sync with its Modifications targets, and `supersedes` in sync with its Modifications' `Supersedes.` lines, as you write them — they are how agents skimming the backlog find this ticket without reading it.
+- **Number the criteria.** Assign every EARS criterion its stable ID (`AC-<ordinal>.<n>`, per `agents/schemas/ticket.md` → Criterion IDs) as you write it, in order of appearance. IDs are immutable: never renumber on revision; a deleted criterion's number retires with it; on a re-flesh, unchanged criteria keep their IDs and new ones take the next unused numbers. These IDs are what later tickets retire by name — and what lets a build-independent test suite target criteria, if the operator ever commissions one from the backlog.
 - **Declare dependencies.** Record in the frontmatter `depends_on` every lower-numbered ticket whose concepts this one references, whose behavior it modifies, or whose Platform & Constraints Amendment it relies on — the tickets you pulled full-text during the skim are your candidate list. At build time a ticket may assume only its `depends_on` closure is built (independent tickets may build in parallel), so an undeclared dependency is a spec bug.
 - **Ubiquitous language across iterations.** New terms go in the ticket's Terminology (feature-local by default). When a candidate term overlaps an existing entry (foundation or a feature doc), surface the overlap and ask: reuse, rename, or deprecate? Do not silently introduce a synonym.
 - **Collaborate on design, don't decide it.** When the ticket needs UI or interaction detail beyond what the global design covers, **surface the need and recommend running the `design` agent** (see Design collaboration below). You spec the *what*; the design agent owns the *how*.
@@ -83,7 +84,7 @@ Walk through the user-facing scenarios this ticket adds: context, steps, EARS ac
 
 Ask: "Does this change behavior already defined in the foundation, an existing feature doc, or a lower-numbered ticket — replace a scenario, change a criterion, alter an edge case?"
 
-If yes, capture each modification, naming the source by canonical name, with superseding EARS criteria. If no, omit.
+If yes, capture each modification, naming the source by canonical name, the criterion IDs the change retires (the `Supersedes.` line — read the source ticket's criteria to identify them), and the superseding EARS criteria. A behavior removed outright is a `Supersedes.` line with no replacement criteria. If no, omit.
 
 ### Phase 6 — New feature specifications (if any)
 
@@ -118,7 +119,8 @@ If resolving the block changed any canonical names or specified behavior, **swee
 You're done when:
 
 - All applicable ticket sections are complete per `agents/schemas/ticket.md`.
-- The frontmatter `introduces` / `modifies` lists match the ticket's Terminology entries and Modifications targets exactly, and `depends_on` names every lower-numbered ticket this one builds on (`[]` if independent).
+- The frontmatter `introduces` / `modifies` / `supersedes` lists match the ticket's Terminology entries, Modifications targets, and `Supersedes.` lines exactly, and `depends_on` names every lower-numbered ticket this one builds on (`[]` if independent).
+- Every EARS criterion carries a stable, never-reused `AC-` ID.
 - Every new concept has been pressure-tested for semantics.
 - Any design needs have been resolved by the `design` agent (global → design system/interactions; feature-local → the ticket's Design section).
 - No `[NEEDS CLARIFICATION]` markers remain.

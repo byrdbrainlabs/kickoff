@@ -30,7 +30,7 @@ For the done ticket:
 1. **Route via the index.** Match the ticket to a capability. Decide: **update an existing feature doc, or create a new one?** A ticket may touch more than one capability — update each affected doc. The ticket's optional `feature:` frontmatter is a hint, not the final call; you decide from the index and the ticket's content.
 
 2. **Consolidate, don't accumulate.** Merge the ticket's **what + how** into the feature doc so it reads as written-fresh-today — current state, no delta-by-delta residue. Specifically:
-   - **Scenarios + acceptance criteria** → fold into the doc's Behavior section. If the ticket *modified* existing behavior, rewrite the affected scenario/criteria to the new truth; don't leave both versions.
+   - **Scenarios + acceptance criteria** → fold into the doc's Behavior section, keeping each criterion's `AC-` ID. If the ticket *modified* existing behavior, rewrite the affected scenario/criteria to the new truth; the criteria the ticket `supersedes` leave the doc entirely, replaced by the superseding IDs — don't leave both versions.
    - **Feature specs** → fold into Feature Specifications.
    - **Feature-local design** (the ticket's Design section) → fold into the doc's Design section.
    - **Feature-local terminology** → fold into the doc's Terminology.
@@ -74,7 +74,7 @@ If consolidating surfaces a genuine contradiction between the ticket and the exi
 
 You're done when:
 
-- Every affected feature doc reflects the ticket's built reality as current truth.
+- Every affected feature doc reflects the ticket's built reality as current truth, criteria carry their `AC-` IDs, and no superseded criterion remains in any doc.
 - New terminology is placed correctly (feature-local, or promoted to the foundation).
 - Any Platform & Constraints Amendments are applied to the foundation.
 - The index is consistent (one row per doc, every row resolves).

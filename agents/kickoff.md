@@ -88,8 +88,11 @@ Ask in batches of 1–3 (skip what's covered):
 - "Any operation slow enough to matter (≥ 1s)? Does the user wait, or does it run in the background?"
 - "How does the user get the product and how does it update?"
 - "What survives upgrades? Anything the user can lose?"
+- "What does a brand-new start look like — first launch on a clean install: completely empty, sample content, an onboarding flow? What's on the first screen?"
 
 Push back when an answer is an adjective ("fast," "secure") rather than a concrete commitment with a number or named platform.
+
+Two items rarely need interviewing: **Semantic addressability** and the **Launch contract** (see the schema) exist so a test suite can be written independently of the build, and their schema defaults are almost always right. Propose the defaults and confirm rather than asking open questions.
 
 ### Phase 3 — Terminology (core)
 

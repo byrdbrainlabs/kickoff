@@ -112,6 +112,7 @@ Cover every item below that applies. Mark items that don't apply as "Not applica
 - **Application shape.** Web app, desktop, mobile, native CLI, server, hybrid. Single-user, multi-user, or both. Online-required, offline-available, or offline-first.
 - **Platform support.** Specific browsers, OS versions, device classes, screen sizes the product commits to working on.
 - **Accessibility commitments.** WCAG conformance level (A / AA / AAA). Specific assistive-tech support (screen readers, keyboard-only operation, voice control).
+- **Semantic addressability.** Every user-perceivable interactive element, and every state the user is expected to notice, is exposed through the platform's semantic surface under its canonical Terminology name: accessibility-tree roles and accessible names for web / desktop / mobile UIs; subcommand, flag, and output names for CLIs; resource and operation names for API products. This is an accessibility commitment first — assistive technology perceives exactly this surface — and it is also what makes every element the tickets name a **touch point**: programmatically locatable by canonical name, never by implementation detail, by any test suite written independently of the build (see the ticket schema's Touch points convention). **Default:** committed, with names drawn verbatim from Terminology and the Experience Overview; deviate only deliberately.
 - **Localization.** Languages / locales supported at first release. RTL support. Commitment for adding more locales later.
 - **Data handling.** Where the user's data lives (on-device, on-server, both). What leaves the device, when, and to where. Whether the user can export or delete it. Encryption commitments the user can rely on.
 - **Telemetry.** What the product collects from the user, what it does not, opt-in or opt-out.
@@ -121,8 +122,10 @@ Cover every item below that applies. Mark items that don't apply as "Not applica
 - **Synchronous vs. asynchronous operations.** For any operation that takes long enough to matter (≥ 1s perceived), whether the user waits or it proceeds in the background, and what they see either way.
 - **Distribution.** How the user gets the product (app store, web URL, package manager, signed installer). How it updates (auto, prompted, manual).
 - **Data preservation across upgrades.** What survives upgrades. What is reversible. What re-install or downgrade loses.
+- **Initial state.** What a fresh start looks like — first launch on a clean install or checkout: truly empty, seeded with sample content, or an onboarding flow. Stated concretely enough that "a new user's first screen" is unambiguous. A build-independent test suite relies on this commitment too: every test run begins from this state.
+- **Launch contract.** The single documented way to start the product from a clean checkout and learn where to reach it — e.g., a `run` script or target at the repo root that starts the app and prints its URL; for a CLI, the command name. This is the one commitment in this section addressed to the operator (and any build-independent test suite) rather than the end user; it earns its place because verifying a build independently of how it was made is impossible without a known way to start and reach the product. It constrains nothing else about implementation — any language, framework, or architecture can satisfy it.
 
-State each item as a **user-facing commitment**, not as implementation. "Works offline" is a commitment; "uses IndexedDB" is implementation and does not go here.
+State each item as a **user-facing commitment**, not as implementation. "Works offline" is a commitment; "uses IndexedDB" is implementation and does not go here. (The Launch contract is the sole deliberate exception — see its entry.)
 
 **Completion:** Every applicable item has a concrete answer. Every numeric commitment has a number. Items that do not apply are explicitly marked "Not applicable — <reason>."
 
@@ -165,6 +168,8 @@ Format:
 The foundation captures **everything stable that the user can perceive or rely on**: terminology, voice, platform shape, performance commitments, data-handling commitments, accessibility level, distribution, supported platforms, external integrations the user can see, and the named persistent UI areas. If the user could notice it and it is stable across the product, it belongs here.
 
 The foundation does **not** capture pure implementation choices — module structure, file layout, language tooling, libraries, frameworks, test framework, lint / format, CI/CD, retry numbers, logging format, schema mechanics, monitoring. Those are the coding harness's call. The foundation also does **not** capture buildable work — scenarios and feature specs live in tickets and feature docs.
+
+One deliberate exception: the **Launch contract** (§5) is operator-facing rather than user-facing. It is admitted because verifying a build independently of how it was made is impossible without it, and it constrains no implementation choice beyond having a documented way to start and reach the product.
 
 The boundary is: would the user perceive a difference if this decision were changed? If yes and it is stable across the product → foundation. If yes but it is specific to one feature → a ticket / feature doc. If no → the harness.
 

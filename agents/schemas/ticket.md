@@ -34,6 +34,7 @@ title: Short Title
 feature: feature-slug            # optional — the capability this targets, if known
 introduces: [Term A, Term B]     # canonical terms this ticket defines (fleshed tickets; omit if none)
 modifies: [Term C]               # canonical names whose behavior this ticket changes (omit if none)
+supersedes: [AC-004.2]           # criterion IDs this ticket retires (omit if none)
 depends_on: [001-app-shell]      # lower-numbered tickets this one requires built ([] if independent)
 ---
 ```
@@ -42,6 +43,7 @@ depends_on: [001-app-shell]      # lower-numbered tickets this one requires buil
 - `title` is a short human-readable title (≤ 60 characters).
 - `feature` (optional) names the feature doc this ticket most likely updates. A hint for the documentation agent — which makes the final new-vs-update call via the feature index.
 - `introduces` / `modifies` are the ticket's **exports**, maintained by the feature agent during fleshing (stubs don't have them yet). They exist so agents skimming the backlog can answer "which ticket defines the concept I'm referencing?" and "which tickets change this behavior?" from frontmatter alone, without reading ticket bodies. **Sync rule:** every entry in the ticket's Terminology section appears in `introduces`, and every `Modifies:` target in Section 6 appears in `modifies` — no more, no less. One carve-out: a Terminology entry that **annotates an existing foundation or feature-doc term** (adding feature context to a concept defined elsewhere, and saying so) is excluded from `introduces` — that list answers "which ticket *defines* this concept?", and for an annotated term the answer is the original definition's home. Omit either field when empty.
+- `supersedes` lists the **criterion IDs** (see Conventions → Criterion IDs) this ticket retires — statements that stop being true of the product once this ticket is built. **Sync rule:** it is exactly the union of the `Supersedes.` lines in Section 6 — no more, no less. Every retired ID belongs to a ticket in `depends_on` (you can only retire behavior you build on). A retired ID is usually replaced by this ticket's own updated criteria, but may stand unreplaced when a behavior is removed outright. This field is what makes the **active acceptance contract** computable from frontmatter alone: at any point in the backlog, the criteria in force are all criteria minus the superseded IDs — the contract any build of the backlog must satisfy. Omit when empty.
 - `depends_on` lists the lower-numbered tickets (by file stem, `NNN-slug`) that must be **built** before this one can run — direct dependencies only; schedulers compute the closure. The feature agent derives it during fleshing: any lower-numbered ticket whose concepts this ticket references, whose behavior it modifies, or whose Platform & Constraints Amendment it relies on is a dependency. A fleshed ticket always carries the field; `[]` means independent — buildable any time. Stubs don't have it yet.
 
 A `todo/` ticket is **ready** when every ticket in its `depends_on` is in `done/`. Tickets with disjoint dependency closures may build **in parallel** — `depends_on` captures semantic dependence; code-level conflicts between parallel builds are the build harness's concern.
@@ -110,7 +112,7 @@ The user scenarios this ticket introduces or changes. Same structure as a featur
 
 **Steps.** Step-by-step interaction. Each step: the user's action, the UI element interacted with, the system's response.
 
-**Acceptance criteria.** 2–6 EARS-format statements, co-located with the scenario.
+**Acceptance criteria.** 2–6 EARS-format statements, co-located with the scenario, each carrying its criterion ID (see Conventions → Criterion IDs).
 
 **Features referenced.** Links to feature specs (Section 7) where applicable.
 
@@ -119,7 +121,7 @@ Each scenario is self-contained and may reference UI elements and concepts from 
 #### DOs
 - DO specify every UI element a user interacts with, and every element that gives context or feedback.
 - DO specify conditional UI elements and alternate paths.
-- DO use the names defined in the foundation's Experience Overview and Terminology.
+- DO use the names defined in the foundation's Experience Overview and Terminology — every element named becomes a touch point (see Conventions).
 - DO use `[NEEDS CLARIFICATION: <specific question>]` inline for ambiguities.
 
 #### DON'Ts
@@ -140,11 +142,12 @@ Format:
 
 **Source.** [Feature doc: resource-ingestion], [Foundation, Experience Overview], or [Ticket: 015-full-text-search]
 **Change.** A one-paragraph description of what behavior is now different.
+**Supersedes.** `AC-015.2`, `AC-015.3` — the criterion IDs no longer true as stated. Omit the line if the change retires no existing criteria (e.g., it modifies foundation behavior that carries no IDs).
 **Updated acceptance criteria.**
-- WHEN … THE SYSTEM SHALL …
+- `AC-021.4` WHEN … THE SYSTEM SHALL …
 ```
 
-Modifications should be deliberate. Keep the frontmatter `modifies` list in sync: every `Modifies:` target here appears there, by exact canonical name.
+Modifications should be deliberate. Keep the frontmatter `modifies` list in sync: every `Modifies:` target here appears there, by exact canonical name. Likewise `supersedes`: the frontmatter list is exactly the union of the `Supersedes.` lines here. A criterion may be retired without replacement (a behavior removed outright) — the `Supersedes.` line then stands without updated criteria.
 
 Include this section only if modifications exist. Otherwise omit.
 
@@ -214,6 +217,26 @@ The same five patterns as the foundation and feature docs:
 - `WHERE <feature is enabled> THE SYSTEM SHALL <response>`
 - `THE SYSTEM SHALL <response>`
 
+### Touch points
+
+Every UI element, command, or operation a scenario or feature spec names is a **touch point**: a programmatic testing target. No extra markup is needed — naming it in ubiquitous language *is* the specification, because the foundation's Semantic addressability commitment guarantees the built element is locatable by that canonical name through the platform's semantic surface (role + accessible name for UIs; subcommand/flag for CLIs; resource/operation for APIs).
+
+This is deliberately as far as a ticket goes toward testing. No selectors, no test IDs, no test plans, and no constraint on how a build tests itself — the build's own test suite is an implementation detail entirely outside this system. Touch points exist, together with the foundation's Launch contract and Initial state commitments, so that a conformance suite can be written later, straight from the tickets, against any conforming build — without ever having been part of one.
+
+### Criterion IDs
+
+Every EARS criterion in a ticket carries a stable ID — `AC-<ordinal>.<n>`, the ticket's filename ordinal plus a per-ticket counter — written as a code span at the start of the line:
+
+```
+- `AC-012.3` WHEN … THE SYSTEM SHALL …
+```
+
+The feature agent assigns IDs in order of appearance while fleshing. IDs are **immutable once assigned**: never renumbered, never reused. If a criterion is deleted during drafting, its number retires with it — gaps are fine, mirroring ticket ordinals. On a re-flesh after a block, unchanged criteria keep their IDs and new criteria take the next unused numbers.
+
+IDs are what make criteria addressable across the system: a later ticket retires an ID by naming it in a `Supersedes.` line (Section 6) and its `supersedes` frontmatter, and feature docs carry IDs through consolidation — so the **active acceptance contract** (all criteria minus superseded ones) stays computable and traceable to its origin, ready for a build-independent test suite to target whenever the operator chooses to write one.
+
+The foundation's commitments carry no IDs — where a foundation commitment is testable, the tickets that realize it state it as their own criteria.
+
 ### Ambiguity markers
 
 `[NEEDS CLARIFICATION: <specific question>]` — same convention as the foundation. A ticket may not move from `draft/` to `todo/` while unresolved markers remain, and the build process should not proceed past them.
@@ -233,6 +256,7 @@ title: <Short Title>
 feature: <feature-slug>          # optional
 introduces: [<Term>, …]          # omit if none
 modifies: [<canonical name>, …]  # omit if none
+supersedes: [<AC-NNN.k>, …]      # omit if none
 depends_on: [<NNN-slug>, …]      # [] if independent
 ---
 
@@ -261,7 +285,7 @@ depends_on: [<NNN-slug>, …]      # [] if independent
 **Context.** …
 **Steps.** …
 **Acceptance criteria.**
-- WHEN … THE SYSTEM SHALL …
+- `AC-NNN.k` WHEN … THE SYSTEM SHALL …
 **Features referenced.** [Feature Y](#feature-y) <!-- if any -->
 
 ## Modifications to Existing Behavior <!-- omit if none -->
@@ -270,8 +294,9 @@ depends_on: [<NNN-slug>, …]      # [] if independent
 
 **Source.** …
 **Change.** …
+**Supersedes.** `AC-NNN.k`, … <!-- omit if none retired -->
 **Updated acceptance criteria.**
-- WHEN … THE SYSTEM SHALL …
+- `AC-NNN.k` WHEN … THE SYSTEM SHALL …
 
 ## Feature Specifications <!-- omit if none -->
 
@@ -281,7 +306,7 @@ depends_on: [<NNN-slug>, …]      # [] if independent
 **Conditional behavior.** …
 **Edge cases and error handling.** …
 **Acceptance criteria.**
-- WHEN … THE SYSTEM SHALL …
+- `AC-NNN.k` WHEN … THE SYSTEM SHALL …
 
 ## Design <!-- omit if none; feature-local only -->
 

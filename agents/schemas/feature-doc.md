@@ -65,7 +65,7 @@ The **consolidated current behavior** of the capability — the scenarios and ac
 
 **Context.** The user's role, current state, and goal.
 **Steps.** Step-by-step interaction: user action, UI element, system response.
-**Acceptance criteria.** EARS-format statements, co-located with the scenario. These are the current **acceptance contract** for this capability — the regression contract future tickets reference and may modify.
+**Acceptance criteria.** EARS-format statements, co-located with the scenario. These are the current **acceptance contract** for this capability — the regression contract future tickets reference and may modify. Each criterion keeps the `AC-` ID assigned by the ticket that introduced it (`agents/schemas/ticket.md` → Criterion IDs); a superseded ID never appears here — its superseding criteria replace it.
 
 Scenarios are self-contained and reference foundation / other-feature concepts by canonical name. Write them as current state, never as "changed from…".
 
@@ -189,7 +189,7 @@ title: <Capability Name>
 **Context.** …
 **Steps.** …
 **Acceptance criteria.**
-- WHEN … THE SYSTEM SHALL …
+- `AC-NNN.k` WHEN … THE SYSTEM SHALL …
 
 ## Feature Specifications <!-- omit if none -->
 
@@ -199,7 +199,7 @@ title: <Capability Name>
 **Conditional behavior.** …
 **Edge cases and error handling.** …
 **Acceptance criteria.**
-- WHEN … THE SYSTEM SHALL …
+- `AC-NNN.k` WHEN … THE SYSTEM SHALL …
 
 ## Design <!-- omit if none; feature-local only -->
 
