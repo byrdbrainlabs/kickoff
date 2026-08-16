@@ -1,5 +1,7 @@
 # Kickoff
 
+> **Frozen (August 2026).** Development of this framework moved into its first consumer, the Notebook project (`~/dev/notebook`), whose `agents/` tree is now the source of truth — the two proved coupled enough that a two-repo sync process wasn't paying for itself with a single consumer. This repo remains as the framework's history and the seed for a future extraction when a second consumer exists. See `docs/notebook-relationship.md` for the full story.
+
 A harness-agnostic system of requirements agents that produce the artifacts a coding agent needs to build a software product autonomously — and to keep extending it, one ticket at a time.
 
 It is built on one idea: **separate what the product *is* from the work that *changes* it.** Stable, product-wide context lives in a foundation that every agent inherits. Buildable work flows through a backlog of tickets. What's been built is consolidated into living feature docs that stay current. Implementation — language, framework, file layout, architecture — is left entirely to the coding harness, which is the open experimentation surface.
@@ -167,7 +169,7 @@ The `docs/` tree ships pre-created so the shape is visible on clone. The foundat
 
 ## Status
 
-The schemas and agents are the stable core. There is deliberately no build agent — how you turn tickets into code (and what architecture it chooses) is the primary open experimentation surface. There is no bundled worked example yet; the cleanest way to see the system is to clone the repo and run the kickoff agent on a small idea, then follow the loop.
+**Frozen** — see the note at the top. The current framework lives in the Notebook repo's `agents/` tree; anything below describes the system as of the freeze. The schemas and agents are the stable core. There is deliberately no build agent — how you turn tickets into code (and what architecture it chooses) is the primary open experimentation surface. There is no bundled worked example yet; the cleanest way to see the system is to clone the repo and run the kickoff agent on a small idea, then follow the loop.
 
 ## License
 
